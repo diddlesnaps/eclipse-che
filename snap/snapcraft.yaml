@@ -1,0 +1,31 @@
+name: che
+version: '6.10.0' 
+summary: Eclipse CHE
+description: |
+  Next-generation Eclipse IDE. Open source workspace server and cloud IDE. 
+
+grade: stable
+confinement: strict
+
+parts:
+  che:
+    after: [node]
+    plugin: maven
+    source: https://github.com/eclipse/che.git
+#    source-tag: '6.10.0'
+    override-build: |
+      mvn -e -DskipTests=true -Dfindbugs.skip=true -Dgwt.compiler.localWorkers=2 -T 1C -Dmdep.analyze.skip=true -Dlicense.skip=true -Pnative clean install
+    build-packages:
+      - golang
+  node:
+    plugin: nil
+    override-build: |
+      apt install -y apt-transport-https
+      echo "deb https://deb.nodesource.com/node_9.x xenial main" | \
+            sudo tee /etc/apt/sources.list.d/node.list
+      curl --silent https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add -
+      apt-get update
+      apt install -y nodejs
+    prime: [-./*]
+    build-packages:
+      - curl
